@@ -7,10 +7,11 @@ from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
 from api.utils import APIException, generate_sitemap
-from api.models import db
+from api.models import db, User
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+from datetime import timedelta
 
 #from models import Person
 
@@ -27,6 +28,10 @@ else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = "secret-key"
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24) # Active for 24 hours
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30) # Valid for 30 days 
+
 MIGRATE = Migrate(app, db, compare_type = True)
 db.init_app(app)
 
