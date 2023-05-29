@@ -9,26 +9,37 @@ from datetime import timedelta
 
 api = Blueprint('api', __name__)
 
-@api.route('/signup', methods=['POST'])
+@api.route('/signup', methods=["POST"])
 def signup():
-    username = request.get_json("username")
-    email = request.json.get("email")
-    password = request.json.get("password")  
-    new_user = User(username = username, email = email, password = password)
+    data = request.get_json()
+    if not data:
+        return jsonify({"error" : "no data provided"}), 400
+    email = data.get("email")
+    password = data.get("password")
+    if not email or not password:
+         return jsonify({"error" : "all inputs are required"}), 400
+    if User.query.filter_by(email=email).first():
+         return jsonify({"error" : "email is already signed up"})
+    new_user = User(email = email, password = password, is_active=True)
     db.session.add(new_user)
     db.session.commit()    
-    return jsonify(new_user.serialize()), 200
+    return jsonify({"msg" : "user successfully signed up"}), 201
 
 @api.route('/login', methods=['POST', 'GET'])
 def login():
-    email = request.json.get("email")
-    password = request.json.get("password")
-    user = User.query.filter_by(email=email, password=password).first()
-    if user is None:
-            return jsonify({"msg": "Incorrect Email or Password"}), 401
+    data = request.get_json()
+    if not data:
+        return jsonify({"error" : "no data provided"}), 400
+    email = data.get("email")
+    password = data.get("password")
+    if not email or not password:
+         return jsonify({"error" : "all inputs are required"}), 400
+    user = User.query.filter_by(email=email).first()
+    if not user or user.password != password:
+            return jsonify({"msg": "incorrect email or password"}), 401
     time_token = timedelta(minutes = 5) #5 min as a case
     access_token = create_access_token(identity=email, expires_delta=time_token)
-    return jsonify({"access_token" : access_token}),200
+    return jsonify({"access_token" : access_token}), 200
 
 
 #private route
