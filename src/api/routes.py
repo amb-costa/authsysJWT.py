@@ -19,7 +19,7 @@ def signup():
     if not email or not password:
          return jsonify({"error" : "all inputs are required"}), 400
     if User.query.filter_by(email=email).first():
-         return jsonify({"error" : "email is already signed up"})
+         return jsonify({"error" : "email is already signed up"}), 409
     new_user = User(email = email, password = password, is_active=True)
     db.session.add(new_user)
     db.session.commit()    

@@ -1,40 +1,32 @@
 import React, { useContext, useState } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/home.css";
+import { Signup } from "./signup.jsx";
+import { Login } from "./login.jsx";
 
 export const Home = () => {
 	const { store, actions } = useContext(Context);
-	const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+
+	const OnPage = ({ current_user }) => {
+		return (
+			<div className="row m-5 row-cols-1 justify-content-center bg-secondary bg-opacity-25">
+				<h2 className="my-3 col-8">Hey! seems like you already logged in, nice!</h2>
+				<h4 className="my-3 col-8">Welcome {current_user.email}!</h4>
+				<h5 className="my-3 col-8 overflow-auto">Your token is {store.access_token}</h5>
+				<h6 className="my-3 col-8">This was fun but it's time to logout...</h6>
+				<div className="text-center my-4 col-2 mx-auto">
+					<button className="btn btn-primary" onClick={() => {actions.logout()}}>Logout</button>
+				</div>
+				
+			</div>
+		)
+	}
 
 	return (
 		<div className="text-center mt-5">
-			<h1>Hey! let's try a signup first:</h1>
-				{(store.current_user!="" && store.current_user!=undefined && store.current_user) ?
-				(<p>Hey! you're already signed up! and this is your email: {store.current_user}!</p>) :
-				(<div>
-					<form onSubmit={(e) => e.preventDefault()}>
-					<div className="my-3">
-                        <label htmlFor="exampleInputEmail2" className="form-label text-center text-light">Email address</label>
-                        <input type="email" className="form-control" id="exampleInputEmail2" aria-describedby="emailHelp" placeholder="example@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-                        <div id="emailHelp" className="form-text text-light">We'll never share your email with anyone else.</div>
-                    </div>
-					<div className="mb-3">
-                    	<label htmlFor="exampleInputPassword2" className="form-label text-light">Password</label>
-						<input type="password" className="form-control" id="exampleInputPassword2" placeholder="Example123" value={password} onChange={(e) => setPassword(e.target.value)} />
-                    </div>
-					<div className="text-center">
-                            <button className="btn btn-success mb-3" onClick={() => {
-                                if (email === "" || password === "") {
-                                    alert("seems like you lack information yet...")
-                                }
-                                else {
-                                    actions.signup(email, password)
-                                }
-                            }}>signup</button>
-                        </div>
-					</form>
-				</div>)}
+			<h1 className="my-3">We're gonna try some authentication procedures...</h1>
+			{(store.access_token!="") ? <OnPage current_user={store.current_user} /> : 
+				(store.alreadytaken == "" ? <Signup /> : <Login /> )}
 		</div>
 	);
 };

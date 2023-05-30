@@ -1,8 +1,10 @@
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
-			current_user: null,
-			access_token: null
+			current_user: "",
+			access_token: "",
+			alreadytaken: "",
+			created:""
 		},
 
 		actions: {
@@ -19,22 +21,22 @@ const getState = ({ getStore, getActions, setStore }) => {
 							"is_active" : true
 						})
 					})
-					if (answer.status!=201) {
-						alert("something went wrong!")
-						return false
+					if (answer.status != 201) {
+						console.log("status is not 201 so there might be an issue, wait for it...")
 					}
+					if (answer.status == 409) {
+						return (setStore({ "alreadytaken" : true }))
+					} else {
 					const data = await answer.json()
 					console.log(data)
-					sessionStorage.setItem("current_user", data)
-					setStore({ current_user : data})
-					console.log(current_user)
-					return true
+					setStore({"created" : true})
+					return true}
 				} catch (error) { console.error("an issue has been found", error) }
 			},
 
 			login: async (email, password) => {
 				try {
-					const answer = await(process.env.BACKEND_URL + "api/login", {
+					const answer = await fetch(process.env.BACKEND_URL + "api/login", {
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json",
@@ -49,11 +51,12 @@ const getState = ({ getStore, getActions, setStore }) => {
 					return false
 				}
 				const data = await answer.json()
+				console.log(data)
 				sessionStorage.setItem("access_token", data.access_token)
 				sessionStorage.setItem("current_user", email)
-				setStore({ access_token : data.access_token })
-				setStore({ current_user : data })
-				console.log(current_user)
+				setStore({ "access_token" : data.access_token })
+				setStore({ "current_user" : {"email" : email, "password" : password} })
+				console.log(getStore().current_user)
 				return true
 				}
 				catch(error) { console.error("an issue has been found", error) }
@@ -62,8 +65,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 			logout: () => {
                 sessionStorage.removeItem("access_token")
 				sessionStorage.removeItem("current_user")
-				setStore({access_token: null})
-				setStore({current_user: null})
+				setStore({"access_token": ""})
+				setStore({"current_user": ""})
+				setStore({"alreadytaken" : ""})
+				setStore({"created" : ""})
             },
 		}
 	};
